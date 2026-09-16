@@ -130,12 +130,42 @@ Frontend example (`ui-web/.env.example`):
 
 ```env
 VITE_API_BASE_URL=http://localhost:4000
+VITE_THUNDERID_BASE_URL=https://localhost:8090
+VITE_THUNDERID_CLIENT_ID=your-thunderid-client-id
 ```
 
 Suggested local setup:
 
 1. Copy each `.env.example` to `.env` in its own folder.
 2. Keep secrets local only.
+
+## ThunderID Setup
+
+Run ThunderID locally:
+
+1. Start your self-hosted ThunderID instance at `https://localhost:8090`.
+2. Confirm the instance is reachable in your browser before starting the UI.
+
+ThunderID application settings used by this UI:
+
+- Application type: `React` (public client)
+- Redirect URIs:
+	- `http://localhost:5173`
+	- `http://localhost:5173/`
+	- `http://localhost:5173/dashboard`
+- CORS origin: `http://localhost:5173`
+
+Frontend environment variables (`ui-web/.env`):
+
+- `VITE_THUNDERID_BASE_URL=https://localhost:8090`
+- `VITE_THUNDERID_CLIENT_ID=<your-thunderid-client-id>`
+
+Log in with a test user:
+
+1. Open `http://localhost:5173`.
+2. Click **Sign in with ThunderID**.
+3. Authenticate with a test user created in your ThunderID instance (from the ThunderID admin console or seed data).
+4. After successful authentication, you are redirected to `/dashboard`.
 
 ## Docker and PostgreSQL Setup
 
@@ -283,7 +313,7 @@ GET /api/access-requests?status=pending&priority=high&search=github
 
 ## Known Limitations
 
-- No authentication or authorization in Phase 1.
+- API-side authorization enforcement is not implemented yet; current authentication is frontend-only.
 - No user-specific ownership model yet.
 - No pagination/sorting controls yet.
 - No automated test suite included yet.

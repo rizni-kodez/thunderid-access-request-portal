@@ -11,6 +11,9 @@ interface AccessRequestFormProps {
 	isOpen: boolean;
 	mode: "create" | "edit";
 	initialData?: AccessRequest;
+	defaultRequesterName?: string;
+	defaultRequesterEmail?: string;
+	lockRequesterEmail?: boolean;
 	isSubmitting: boolean;
 	submitError?: string | null;
 	onClose: () => void;
@@ -28,9 +31,17 @@ const defaultFormValues: AccessRequestFormValues = {
 	notes: ""
 };
 
-function mapToFormValues(data?: AccessRequest): AccessRequestFormValues {
+function mapToFormValues(
+	data?: AccessRequest,
+	defaultRequesterName?: string,
+	defaultRequesterEmail?: string
+): AccessRequestFormValues {
 	if (!data) {
-		return defaultFormValues;
+		return {
+			...defaultFormValues,
+			requesterName: defaultRequesterName ?? defaultFormValues.requesterName,
+			requesterEmail: defaultRequesterEmail ?? defaultFormValues.requesterEmail
+		};
 	}
 
 	return {
@@ -49,6 +60,9 @@ export default function AccessRequestForm({
 	isOpen,
 	mode,
 	initialData,
+	defaultRequesterName,
+	defaultRequesterEmail,
+	lockRequesterEmail = false,
 	isSubmitting,
 	submitError,
 	onClose,
@@ -59,10 +73,10 @@ export default function AccessRequestForm({
 
 	useEffect(() => {
 		if (isOpen) {
-			setValues(mapToFormValues(initialData));
+			setValues(mapToFormValues(initialData, defaultRequesterName, defaultRequesterEmail));
 			setTouched(false);
 		}
-	}, [initialData, isOpen]);
+	}, [defaultRequesterEmail, defaultRequesterName, initialData, isOpen]);
 
 	const title = mode === "create" ? "Create Access Request" : "Edit Access Request";
 
@@ -154,8 +168,11 @@ export default function AccessRequestForm({
 							Requester Email
 							<input
 								value={values.requesterEmail}
+								readOnly={lockRequesterEmail}
 								onChange={(event) => updateField("requesterEmail", event.target.value)}
-								className="h-10 rounded-lg border border-slate-300 px-3 outline-none transition focus:border-slate-500"
+								className={`h-10 rounded-lg border border-slate-300 px-3 outline-none transition focus:border-slate-500 ${
+									lockRequesterEmail ? "cursor-not-allowed bg-slate-100 text-slate-600" : ""
+								}`}
 							/>
 							{touched && formErrors.requesterEmail ? (
 								<span className="text-xs text-rose-700">{formErrors.requesterEmail}</span>

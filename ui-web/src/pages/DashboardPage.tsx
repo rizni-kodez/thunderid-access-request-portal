@@ -1,4 +1,11 @@
 import { useMemo, useState } from "react";
+import { useThunderID } from "@thunderid/react";
+import {
+  getThunderIDUser,
+  getUserDisplayName,
+  getUserEmail,
+  type ThunderIDHookState
+} from "../auth/thunderid";
 import AccessRequestForm from "../components/AccessRequestForm";
 import AccessRequestTable from "../components/AccessRequestTable";
 import EmptyState from "../components/EmptyState";
@@ -31,6 +38,11 @@ const defaultFilters: DashboardFilters = {
 };
 
 export default function DashboardPage(): JSX.Element {
+  const auth = useThunderID() as ThunderIDHookState;
+  const signedInUser = getThunderIDUser(auth.user);
+  const requesterNamePrefill = getUserDisplayName(signedInUser);
+  const requesterEmailPrefill = getUserEmail(signedInUser) ?? "";
+
   const [filters, setFilters] = useState<DashboardFilters>(defaultFilters);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
@@ -172,10 +184,24 @@ export default function DashboardPage(): JSX.Element {
         />
       ) : null}
 
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <details>
+          <summary className="cursor-pointer text-sm font-semibold text-slate-700">
+            Signed-in user (debug)
+          </summary>
+          <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">
+            {JSON.stringify(auth.user ?? null, null, 2)}
+          </pre>
+        </details>
+      </section>
+
       <AccessRequestForm
         isOpen={isFormOpen}
         mode={formMode}
         initialData={selectedRequest}
+        defaultRequesterName={requesterNamePrefill}
+        defaultRequesterEmail={requesterEmailPrefill}
+        lockRequesterEmail
         isSubmitting={isSubmitting}
         submitError={submitError}
         onClose={closeForm}

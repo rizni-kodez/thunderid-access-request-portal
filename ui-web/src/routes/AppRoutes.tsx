@@ -1,12 +1,21 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "../auth/ProtectedRoute";
 import DashboardPage from "../pages/DashboardPage";
+import LandingPage from "../pages/LandingPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 export default function AppRoutes(): JSX.Element {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/dashboard"
+        element={(
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        )}
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: access-portal-postgres
+    environment:
+      POSTGRES_DB: access_portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d access_portal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api-access-mgmt:
+    build:
+      context: ./api-access-mgmt
+      dockerfile: Dockerfile
+    container_name: access-portal-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/access_portal
+      CORS_ORIGIN: http://localhost:5173
+
+volumes:
+  postgres_data:

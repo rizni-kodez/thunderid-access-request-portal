@@ -1,15 +1,15 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: access-portal-postgres
+    container_name: thunderid-portal-postgres
     environment:
       POSTGRES_DB: access_portal
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - thunderid_portal_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d access_portal"]
       interval: 5s
@@ -33,4 +33,4 @@ services:
       CORS_ORIGIN: http://localhost:5173
 
 volumes:
-  postgres_data:
+  thunderid_portal_pgdata:

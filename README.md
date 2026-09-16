@@ -1,4 +1,4 @@
-# auth0-access-request-portal
+# ThunderID Access Request Portal
 
 Access Request Portal is a TypeScript monorepo that contains:
 
@@ -33,7 +33,6 @@ Implemented in this phase:
 
 Explicitly not implemented in Phase 1:
 
-- Auth0 integration
 - Login/register/logout
 - Custom username/password authentication
 - JWT/role-based authorization
@@ -66,7 +65,7 @@ Infrastructure:
 ## Folder Structure
 
 ```text
-auth0-access-request-portal/
+thunderid-access-request-portal/
 ├── api-access-mgmt/
 │   ├── src/
 │   │   ├── config/
@@ -123,7 +122,7 @@ Backend example (`api-access-mgmt/.env.example`):
 ```env
 PORT=4000
 NODE_ENV=development
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/access_portal
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/access_portal
 CORS_ORIGIN=http://localhost:5173
 ```
 
@@ -150,12 +149,12 @@ PostgreSQL container config:
 - Database: `access_portal`
 - Username: `postgres`
 - Password: `postgres`
-- Port: `5432`
+- Port: `5433`
 
 API container config:
 
 - Port: `4000`
-- Uses `DATABASE_URL=postgresql://postgres:postgres@postgres:5432/access_portal`
+- Uses `DATABASE_URL=postgresql://postgres:postgres@postgres:5432/access_portal` (inside Docker network)
 
 Start both services:
 
@@ -186,7 +185,7 @@ This SQL creates the `access_requests` table and related constraints/trigger.
 Use these values:
 
 - Host: `localhost`
-- Port: `5432`
+- Port: `5433`
 - Database: `access_portal`
 - Username: `postgres`
 - Password: `postgres`
@@ -289,15 +288,3 @@ GET /api/access-requests?status=pending&priority=high&search=github
 - No pagination/sorting controls yet.
 - No automated test suite included yet.
 - UI notifications are lightweight and not persisted.
-
-## Phase 2 Auth0 Plan (Preview)
-
-Phase 2 will add Auth0 without replacing core Phase 1 architecture:
-
-1. Frontend login/logout/register through Auth0 React SDK.
-2. Backend JWT validation middleware for protected routes.
-3. Route protection and user-aware request access.
-4. Store Auth0 user identifier (`sub`) with each access request.
-5. Restrict request visibility and actions by authenticated user/role rules.
-
-Phase 1 intentionally excludes all Auth0 and custom credential flows.

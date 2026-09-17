@@ -13,6 +13,11 @@ export type ThunderIDHookState = ReturnType<typeof useThunderID> & {
 	error?: unknown;
 };
 
+export interface OAuthCallbackError {
+	error: string;
+	errorDescription: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
@@ -32,6 +37,29 @@ export function getThunderIDUser(user: unknown): ThunderIDUser | null {
 
 export function getThunderIDLoading(state: ThunderIDHookState): boolean {
 	return Boolean(state.loading ?? state.isLoading);
+}
+
+function decodeQueryParamValue(value: string): string {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+}
+
+export function getOAuthCallbackError(search: string): OAuthCallbackError | null {
+	const params = new URLSearchParams(search);
+	const error = params.get("error");
+	const errorDescription = params.get("error_description");
+
+	if (!error || !errorDescription) {
+		return null;
+	}
+
+	return {
+		error: decodeQueryParamValue(error),
+		errorDescription: decodeQueryParamValue(errorDescription)
+	};
 }
 
 export function getThunderIDErrorMessage(error: unknown): string {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { SignInButton, useThunderID } from "@thunderid/react";
 import {
+	getOAuthCallbackError,
 	getThunderIDErrorMessage,
 	getThunderIDLoading,
 	type ThunderIDHookState
@@ -10,7 +11,11 @@ import { consumeSessionExpiredMessage } from "../auth/accessToken";
 
 export default function LandingPage(): JSX.Element {
 	const auth = useThunderID() as ThunderIDHookState;
+	const location = useLocation();
+	const navigate = useNavigate();
+	const oauthError = getOAuthCallbackError(location.search);
 	const isLoading = getThunderIDLoading(auth);
+	const shouldShowLoading = isLoading && !oauthError;
 	const [sessionExpiredMessage] = useState<string | null>(() => consumeSessionExpiredMessage());
 	const errorMessage = auth.error ? getThunderIDErrorMessage(auth.error) : null;
 
@@ -22,7 +27,7 @@ export default function LandingPage(): JSX.Element {
 		void auth.clearSession();
 	}, [auth, sessionExpiredMessage]);
 
-	if (auth.isSignedIn && !sessionExpiredMessage) {
+	if (auth.isSignedIn && !sessionExpiredMessage && !oauthError) {
 		return <Navigate to="/dashboard" replace />;
 	}
 
@@ -39,6 +44,25 @@ export default function LandingPage(): JSX.Element {
 					Manage application access requests securely using your ThunderID account.
 				</p>
 
+				{oauthError ? (
+					<div
+						role="alert"
+						className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left"
+					>
+						<p className="text-sm font-semibold text-rose-800">Authentication callback error</p>
+						<p className="mt-1 text-sm text-rose-700">{oauthError.errorDescription}</p>
+						<button
+							type="button"
+							onClick={() => {
+								navigate("/", { replace: true });
+							}}
+							className="mt-3 inline-flex rounded-lg border border-rose-300 px-3 py-1.5 text-sm font-semibold text-rose-800 transition hover:bg-rose-100"
+						>
+							Back to sign in
+						</button>
+					</div>
+				) : null}
+
 				{sessionExpiredMessage ? (
 					<div
 						role="status"
@@ -49,7 +73,7 @@ export default function LandingPage(): JSX.Element {
 					</div>
 				) : null}
 
-				{errorMessage ? (
+				{errorMessage && !oauthError ? (
 					<div
 						role="alert"
 						className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left"
@@ -61,7 +85,7 @@ export default function LandingPage(): JSX.Element {
 							onClick={() => {
 								void auth.signIn();
 							}}
-							disabled={isLoading}
+							disabled={shouldShowLoading}
 							className="mt-3 inline-flex rounded-lg border border-rose-300 px-3 py-1.5 text-sm font-semibold text-rose-800 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
 						>
 							Try again
@@ -70,10 +94,10 @@ export default function LandingPage(): JSX.Element {
 				) : null}
 
 				<SignInButton
-					disabled={isLoading}
+					disabled={shouldShowLoading}
 					className="mt-7 inline-flex min-w-[14rem] items-center justify-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
 				>
-					{isLoading ? "Redirecting..." : "Sign in with ThunderID"}
+					{shouldShowLoading ? "Redirecting..." : "Sign in with ThunderID"}
 				</SignInButton>
 			</section>
 		</main>

@@ -1,7 +1,11 @@
 import { type ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useThunderID } from "@thunderid/react";
-import { getThunderIDLoading, type ThunderIDHookState } from "./thunderid";
+import {
+	getOAuthCallbackError,
+	getThunderIDLoading,
+	type ThunderIDHookState
+} from "./thunderid";
 
 interface ProtectedRouteProps {
 	children: ReactNode;
@@ -9,7 +13,30 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps): JSX.Element {
 	const auth = useThunderID() as ThunderIDHookState;
+	const location = useLocation();
+	const navigate = useNavigate();
+	const oauthError = getOAuthCallbackError(location.search);
 	const isLoading = getThunderIDLoading(auth);
+
+	if (oauthError) {
+		return (
+			<main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+				<section className="w-full max-w-md rounded-2xl border border-rose-200 bg-rose-50 p-8 text-left shadow-sm">
+					<p className="text-sm font-semibold text-rose-800">Authentication callback error</p>
+					<p className="mt-2 text-sm text-rose-700">{oauthError.errorDescription}</p>
+					<button
+						type="button"
+						onClick={() => {
+							navigate("/", { replace: true });
+						}}
+						className="mt-4 inline-flex rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-sm font-semibold text-rose-800 transition hover:bg-rose-100"
+					>
+						Back to sign in
+					</button>
+				</section>
+			</main>
+		);
+	}
 
 	if (isLoading) {
 		return (

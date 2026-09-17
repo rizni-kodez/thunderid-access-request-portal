@@ -6,6 +6,7 @@ import pinoHttp from "pino-http";
 import { env } from "./config/env";
 import healthRouter from "./routes/health.routes";
 import accessRequestRouter from "./routes/accessRequest.routes";
+import meRouter from "./routes/me.routes";
 import { notFound } from "./middleware/notFound";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -25,6 +26,7 @@ app.use(express.json());
 
 app.use("/health", healthRouter);
 app.use("/api/access-requests", accessRequestRouter);
+app.use("/api/me", meRouter);
 
 app.use(notFound);
 app.use(errorHandler);

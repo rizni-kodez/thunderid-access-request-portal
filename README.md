@@ -160,6 +160,67 @@ Frontend environment variables (`ui-web/.env`):
 - `VITE_THUNDERID_BASE_URL=https://localhost:8090`
 - `VITE_THUNDERID_CLIENT_ID=<your-thunderid-client-id>`
 
+## ThunderID API Protection
+
+The `api-access-mgmt` service now validates ThunderID access tokens (`typ: at+jwt`, RS256) on protected endpoints.
+
+Required backend env vars (`api-access-mgmt/.env`):
+
+- `THUNDERID_ISSUER=https://localhost:8090`
+- `THUNDERID_JWKS_URI=https://localhost:8090/oauth2/jwks`
+- `THUNDERID_AUDIENCE=https://api.access-portal.local`
+
+ThunderID Resource Server / audience configuration:
+
+- Resource Server identifier: `https://api.access-portal.local`
+- Set the ThunderID application's **Default Audience** to: `https://api.access-portal.local`
+
+Development-only TLS note (self-signed cert):
+
+- If your local ThunderID uses a self-signed certificate, you may temporarily set:
+	- `NODE_TLS_REJECT_UNAUTHORIZED=0`
+- Use this only for local development. Never enable this in production.
+
+Protected endpoints:
+
+- `GET /api/me`
+- `GET /api/access-requests`
+- `POST /api/access-requests`
+- `PATCH /api/access-requests/:id`
+- `DELETE /api/access-requests/:id`
+
+Public endpoint:
+
+- `GET /health`
+
+### Test with curl
+
+Health check (no token required):
+
+```bash
+curl http://localhost:4000/health
+```
+
+Set a valid access token:
+
+```bash
+export ACCESS_TOKEN="<thunderid_access_token>"
+```
+
+Call protected profile endpoint:
+
+```bash
+curl http://localhost:4000/api/me \
+	-H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+List current user's access requests:
+
+```bash
+curl "http://localhost:4000/api/access-requests" \
+	-H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
 Log in with a test user:
 
 1. Open `http://localhost:5173`.
@@ -172,7 +233,6 @@ Log in with a test user:
 Root `docker-compose.yml` runs:
 
 1. `postgres`
-2. `api-access-mgmt`
 
 PostgreSQL container config:
 
@@ -181,21 +241,16 @@ PostgreSQL container config:
 - Password: `postgres`
 - Port: `5433`
 
-API container config:
-
-- Port: `4000`
-- Uses `DATABASE_URL=postgresql://postgres:postgres@postgres:5432/access_portal` (inside Docker network)
-
-Start both services:
-
-```bash
-docker compose up --build
-```
-
-Start only PostgreSQL:
+Start PostgreSQL:
 
 ```bash
 docker compose up -d postgres
+```
+
+Run API from source (separate terminal):
+
+```bash
+npm run dev:api
 ```
 
 Stop services:
@@ -301,7 +356,7 @@ GET /api/access-requests?status=pending&priority=high&search=github
 
 ## Demo Flow
 
-1. Start PostgreSQL and backend (Docker Compose) or run backend locally.
+1. Start PostgreSQL with Docker Compose, then run backend locally with `npm run dev:api`.
 2. Start frontend in `ui-web`.
 3. Open `http://localhost:5173`.
 4. Create a new access request from the dashboard.
@@ -313,8 +368,7 @@ GET /api/access-requests?status=pending&priority=high&search=github
 
 ## Known Limitations
 
-- API-side authorization enforcement is not implemented yet; current authentication is frontend-only.
-- No user-specific ownership model yet.
+- No role-based authorization model yet (endpoints are user-scoped by ThunderID `sub`).
 - No pagination/sorting controls yet.
 - No automated test suite included yet.
 - UI notifications are lightweight and not persisted.

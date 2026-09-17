@@ -9,6 +9,14 @@ export function errorHandler(
   _next: NextFunction
 ): void {
   if (err instanceof ApiError) {
+    if (err.statusCode === 401) {
+      res.status(401).json({
+        error: "unauthorized",
+        message: err.message
+      });
+      return;
+    }
+
     res.status(err.statusCode).json({
       message: err.message,
       ...(err.details ? { details: err.details } : {})

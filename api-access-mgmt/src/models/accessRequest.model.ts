@@ -59,7 +59,7 @@ export const createAccessRequestSchema = z.object({
 	businessJustification: z.string().trim().min(10).max(1000),
 	priority: z.enum(accessRequestPriorities).default("medium"),
 	notes: z.string().trim().max(1000).optional()
-});
+}).strip();
 
 export const updateAccessRequestSchema = z
 	.object({
@@ -72,6 +72,7 @@ export const updateAccessRequestSchema = z
 		status: z.enum(accessRequestStatuses).optional(),
 		notes: z.string().trim().max(1000).nullable().optional()
 	})
+	.strip()
 	.refine((payload) => Object.keys(payload).length > 0, {
 		message: "At least one field must be provided for update"
 	});

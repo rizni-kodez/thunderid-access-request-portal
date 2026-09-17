@@ -53,3 +53,8 @@ export interface CreateAccessRequestPayload {
 }
 
 export type UpdateAccessRequestPayload = Partial<AccessRequestFormValues>;
+
+export interface ApiMeResponse {
+	sub: string;
+	claims: Record<string, unknown>;
+}

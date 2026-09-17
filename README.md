@@ -164,6 +164,10 @@ Frontend environment variables (`ui-web/.env`):
 
 The `api-access-mgmt` service now validates ThunderID access tokens (`typ: at+jwt`, RS256) on protected endpoints.
 
+How the token reaches the API:
+
+The React app reads the current access token from the ThunderID SDK (`useThunderID().getAccessToken()`) via a small auth bridge inside `ThunderIDProvider`. That getter is registered with the shared Axios client, which adds `Authorization: Bearer <token>` to outbound API requests (`/api/access-requests` and `/api/me`). If the API responds with `401`, the app clears the query cache and redirects to the landing page so the user can sign in again.
+
 Required backend env vars (`api-access-mgmt/.env`):
 
 - `THUNDERID_ISSUER=https://localhost:8090`

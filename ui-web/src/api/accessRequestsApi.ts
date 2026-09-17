@@ -2,11 +2,13 @@ import { apiClient } from "./apiClient";
 import type {
 	AccessRequest,
 	AccessRequestFilters,
+	ApiMeResponse,
 	CreateAccessRequestPayload,
 	UpdateAccessRequestPayload
 } from "../types/accessRequest.types";
 
 const ACCESS_REQUESTS_PATH = "/api/access-requests";
+const ME_PATH = "/api/me";
 
 export async function fetchAccessRequests(
 	filters: AccessRequestFilters
@@ -34,5 +36,10 @@ export async function updateAccessRequest(
 
 export async function deleteAccessRequest(id: string): Promise<{ message: string }> {
 	const { data } = await apiClient.delete<{ message: string }>(`${ACCESS_REQUESTS_PATH}/${id}`);
+	return data;
+}
+
+export async function fetchMe(): Promise<ApiMeResponse> {
+	const { data } = await apiClient.get<ApiMeResponse>(ME_PATH);
 	return data;
 }

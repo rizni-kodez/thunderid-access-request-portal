@@ -2,21 +2,33 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createAccessRequest,
 	deleteAccessRequest,
+	fetchMe,
 	fetchAccessRequests,
 	updateAccessRequest
 } from "../api/accessRequestsApi";
 import type {
+	ApiMeResponse,
 	AccessRequestFilters,
 	CreateAccessRequestPayload,
 	UpdateAccessRequestPayload
 } from "../types/accessRequest.types";
 
 const ACCESS_REQUESTS_QUERY_KEY = ["access-requests"] as const;
+const API_ME_QUERY_KEY = ["api-me-debug"] as const;
 
-export function useAccessRequests(filters: AccessRequestFilters) {
+export function useAccessRequests(filters: AccessRequestFilters, enabled: boolean) {
 	return useQuery({
 		queryKey: [...ACCESS_REQUESTS_QUERY_KEY, filters],
-		queryFn: () => fetchAccessRequests(filters)
+		queryFn: () => fetchAccessRequests(filters),
+		enabled
+	});
+}
+
+export function useApiMeDebug(enabled: boolean) {
+	return useQuery<ApiMeResponse>({
+		queryKey: API_ME_QUERY_KEY,
+		queryFn: fetchMe,
+		enabled
 	});
 }
 

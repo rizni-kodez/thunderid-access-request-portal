@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { SignInButton, useThunderID } from "@thunderid/react";
 import {
@@ -5,13 +6,23 @@ import {
 	getThunderIDLoading,
 	type ThunderIDHookState
 } from "../auth/thunderid";
+import { consumeSessionExpiredMessage } from "../auth/accessToken";
 
 export default function LandingPage(): JSX.Element {
 	const auth = useThunderID() as ThunderIDHookState;
 	const isLoading = getThunderIDLoading(auth);
+	const [sessionExpiredMessage] = useState<string | null>(() => consumeSessionExpiredMessage());
 	const errorMessage = auth.error ? getThunderIDErrorMessage(auth.error) : null;
 
-	if (auth.isSignedIn) {
+	useEffect(() => {
+		if (!sessionExpiredMessage) {
+			return;
+		}
+
+		void auth.clearSession();
+	}, [auth, sessionExpiredMessage]);
+
+	if (auth.isSignedIn && !sessionExpiredMessage) {
 		return <Navigate to="/dashboard" replace />;
 	}
 
@@ -27,6 +38,16 @@ export default function LandingPage(): JSX.Element {
 				<p className="mt-3 text-sm text-slate-600 sm:text-base">
 					Manage application access requests securely using your ThunderID account.
 				</p>
+
+				{sessionExpiredMessage ? (
+					<div
+						role="status"
+						className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+					>
+						<p className="text-sm font-semibold text-amber-900">Session expired</p>
+						<p className="mt-1 text-sm text-amber-800">{sessionExpiredMessage}</p>
+					</div>
+				) : null}
 
 				{errorMessage ? (
 					<div

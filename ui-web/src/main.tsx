@@ -6,6 +6,7 @@ import { ThunderIDProvider } from "@thunderid/react";
 import App from "./App";
 import { appConfig } from "./configs/env";
 import { queryClient } from "./configs/queryClient";
+import AuthBridge from "./auth/AuthBridge";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           afterSignInUrl={`${window.location.origin}/dashboard`}
           afterSignOutUrl={`${window.location.origin}/`}
         >
+          <AuthBridge />
           <App />
         </ThunderIDProvider>
       </BrowserRouter>
